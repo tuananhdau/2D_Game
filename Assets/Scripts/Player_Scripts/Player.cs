@@ -32,7 +32,7 @@ public class Player : MonoBehaviour
         Collider2D collInfo = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, whatIsGround);
         if(collInfo == true)
         {
-            Debug.Log("circle collided with " + collInfo.gameObject.name);
+            isGround = true;
         }
     }
     private void FixedUpdate()
@@ -47,5 +47,12 @@ public class Player : MonoBehaviour
              isGround = false;
         }
     }
-       
+    private void OnDrawGizmosSelected()
+    {
+        if (groundCheckPoint != null)
+        Gizmos.color = Color.yellow;
+        {
+            Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
+        } 
+    }
 }
