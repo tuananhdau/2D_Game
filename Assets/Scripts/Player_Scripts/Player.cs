@@ -11,12 +11,17 @@ public class Player : MonoBehaviour
     public Transform groundCheckPoint;
     public float groundCheckRadius = 0.2f;
     public LayerMask whatIsGround;
+    public int jump_Count = 2;
+    private int totall_Jumps;
+    private bool facing_Right;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         movement = 0f;
         isGround = true;
+        facing_Right = true;
+        totall_Jumps = jump_Count;
         rb = this.gameObject.GetComponent<Rigidbody2D>();
     }
 
@@ -38,11 +43,26 @@ public class Player : MonoBehaviour
         {
             isGround = false;
         }
+         Flip();
     }
     private void FixedUpdate()
     {
         transform.position += new Vector3(movement, 0f, 0f)* Time.fixedDeltaTime * speed;
     }
+    void Flip()
+    {
+        if(movement < 0f && facing_Right == true)
+        {
+            transform.eulerAngles = new Vector3(0, -180, 0);
+            facing_Right = false;
+        }
+        else if(movement > 0f && facing_Right == false)
+        {
+            transform.eulerAngles = new Vector3(0, 0, 0);
+            facing_Right = true;
+        }
+    }
+       
     void Jump()
     {
         if(isGround == true)
