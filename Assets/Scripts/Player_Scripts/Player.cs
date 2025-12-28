@@ -34,6 +34,10 @@ public class Player : MonoBehaviour
         {
             isGround = true;
         }
+        else
+        {
+            isGround = false;
+        }
     }
     private void FixedUpdate()
     {
