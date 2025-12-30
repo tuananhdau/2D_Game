@@ -81,8 +81,16 @@ public class Player : MonoBehaviour {
 
     void PlayAttackAnimations() {
         // Random ngẫu nhiên 1 trong 3 animation tấn công
-        int attackIndex = Random.Range(1, 4);
-        animator.SetTrigger("Attack_" + attackIndex);
+        int attackIndex = Random.Range(0, 3);
+        if(attackIndex == 0) {
+            animator.SetTrigger("Attack");
+        }
+        else if(attackIndex == 1) {
+            animator.SetTrigger("Attack_2");
+        }
+        else if(attackIndex == 2) {
+            animator.SetTrigger("Attack_3");
+        }
     }
 
     // Vẽ vòng tròn kiểm tra mặt đất trong cửa sổ Scene
