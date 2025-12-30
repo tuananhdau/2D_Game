@@ -14,7 +14,7 @@ public class Player : MonoBehaviour {
     public Transform groundCheckPoint;
     public float groundCheckRadius = 0.2f;
     public LayerMask whatIsGround;
-    private bool isGround;
+    [HideInInspector] public bool isGround;
 
     private Rigidbody2D rb;
     private Animator animator;
