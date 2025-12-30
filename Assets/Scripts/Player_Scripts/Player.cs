@@ -83,7 +83,7 @@ public class Player : MonoBehaviour {
         // Random ngẫu nhiên 1 trong 3 animation tấn công
         int attackIndex = Random.Range(0, 3);
         if(attackIndex == 0) {
-            animator.SetTrigger("Attack");
+            animator.SetTrigger("Attack_1");
         }
         else if(attackIndex == 1) {
             animator.SetTrigger("Attack_2");
