@@ -8,15 +8,19 @@ public class Player_Dash : MonoBehaviour
     public float dash_Duration = .35f;
     private bool facingRight;
     public Rigidbody2D rb;
+    private Animator animator;
     private bool isDashing;
     private float direction;
-
+    private Player player;
+    
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         isDashing = false;
         facingRight = true;
+        player = this.gameObject.GetComponent<Player>();
+        animator = this.gameObject.GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -31,9 +35,14 @@ public class Player_Dash : MonoBehaviour
         else if (move < 0f){
             facingRight = false;
         }
-        if(Input.GetMouseButtonDown(1) && isDashing== false)
+        if(Input.GetMouseButtonDown(1) && isDashing== false && player.isGround == false)
         {
             StartCoroutine(Dash());
+            animator.SetBool("Dash", true);
+        }
+        if(player.isGround == true)
+        {
+            animator.SetBool("Dash", false);
         }
     }
     IEnumerator Dash()
@@ -54,5 +63,6 @@ public class Player_Dash : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 2f;
         isDashing = false;
+        animator.SetBool("Dash", false);
     }
 }

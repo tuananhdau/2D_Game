@@ -119,11 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &148308649 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3927936094548824623, guid: a984408176a962b48b62b970206ad182, type: 3}
-  m_PrefabInstance: {fileID: 8116067835824680993}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -216,33 +211,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1081254132 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6390808079796917000, guid: a984408176a962b48b62b970206ad182, type: 3}
-  m_PrefabInstance: {fileID: 8116067835824680993}
-  m_PrefabAsset: {fileID: 0}
---- !u!95 &1742235161
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148308649}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 1905ae7d9ab0ae04ab324a5a12d5dd91, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1941206390
 GameObject:
   m_ObjectHideFlags: 0
@@ -394,10 +362,6 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 4666627641829580188, guid: a984408176a962b48b62b970206ad182, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.0303
-      objectReference: {fileID: 0}
-    - target: {fileID: 4666627641829580188, guid: a984408176a962b48b62b970206ad182, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.37
       objectReference: {fileID: 0}
@@ -437,25 +401,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5323923991427587714, guid: a984408176a962b48b62b970206ad182, type: 3}
-      propertyPath: groundCheckPoint
-      value: 
-      objectReference: {fileID: 1081254132}
-    - target: {fileID: 5323923991427587714, guid: a984408176a962b48b62b970206ad182, type: 3}
-      propertyPath: whatIsGround.m_Bits
-      value: 128
-      objectReference: {fileID: 0}
-    - target: {fileID: 6390808079796917000, guid: a984408176a962b48b62b970206ad182, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -1.1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3927936094548824623, guid: a984408176a962b48b62b970206ad182, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1742235161}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a984408176a962b48b62b970206ad182, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
