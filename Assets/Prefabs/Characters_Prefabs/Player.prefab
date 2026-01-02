@@ -190,6 +190,7 @@ MonoBehaviour:
   whatIsGround:
     serializedVersion: 2
     m_Bits: 128
+  isGround: 0
 --- !u!95 &5243409041941573367
 Animator:
   serializedVersion: 7
