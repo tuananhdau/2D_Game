@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6577305341708915389}
   - component: {fileID: 4767457881080373133}
   - component: {fileID: 7072110557595715115}
-  - component: {fileID: 2765566505570427356}
+  - component: {fileID: 2933431270645781116}
   m_Layer: 8
   m_Name: Enemy_4
   m_TagString: Enemy
@@ -40,6 +40,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &8606466160487979015
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -58,6 +59,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -79,9 +82,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 312242055
-  m_SortingLayer: 1
+  m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 2764273851807834643, guid: 7107b2e300b48d14ca2498d3b82f4965, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -91,7 +96,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &6577305341708915389
 Rigidbody2D:
@@ -176,7 +180,7 @@ Animator:
   m_GameObject: {fileID: 1520966660543480669}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: e7060fc21343fc547b52b5528de75fbc, type: 2}
+  m_Controller: {fileID: 9100000, guid: c48f73528e09cf9459bdb3eb6e4f0d97, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -188,7 +192,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &2765566505570427356
+--- !u!114 &2933431270645781116
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -197,27 +201,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 1520966660543480669}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ca0666010d93c148b4c310d62294b5a, type: 3}
+  m_Script: {fileID: 11500000, guid: 7160dc7892dcdef4e89ff2fa9c1f860b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 3
-  deathTime: 0.42
-  patrol_Speed: 2
-  detectPoint: {fileID: 177819991773477439}
-  distance: 1.5
-  whatIsGround:
+  m_EditorClassIdentifier: Assembly-CSharp::Enemy4
+  speed: 2
+  patrolDistance: 3
+  visionRange: 5
+  detectPoint: {fileID: 0}
+  detectRange: 1
+  attackPoint: {fileID: 0}
+  attackRange: 0.5
+  damage: 20
+  attackCooldown: 1.5
+  playerLayer:
     serializedVersion: 2
-    m_Bits: 128
-  player: {fileID: 7496080309730767756, guid: 346a91f92d7f8324b92d79fccc465ffb, type: 3}
-  chaseSpeed: 3
-  retrieveDistance: 5.6
-  size: {x: 20, y: 4}
-  offset: {x: -3.55, y: -0.86, z: 0}
-  attackPoint: {fileID: 9041558607264564020}
-  attackRadius: 3.44
-  whatIsPlayer:
-    serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 1
+  maxHealth: 100
 --- !u!1 &5252539903124645808
 GameObject:
   m_ObjectHideFlags: 0
