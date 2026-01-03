@@ -92,6 +92,8 @@ public class Player : MonoBehaviour {
             animator.SetTrigger("Attack_3");
         }
     }
+    //hear
+    
 
     // Vẽ vòng tròn kiểm tra mặt đất trong cửa sổ Scene
     private void OnDrawGizmosSelected() {
@@ -100,4 +102,5 @@ public class Player : MonoBehaviour {
             Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
         }
     }
+
 }
