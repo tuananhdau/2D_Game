@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4767457881080373133}
   - component: {fileID: 7072110557595715115}
   - component: {fileID: 2933431270645781116}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Enemy_4
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -207,9 +207,8 @@ MonoBehaviour:
   speed: 2
   patrolDistance: 3
   visionRange: 5
-  detectPoint: {fileID: 0}
-  detectRange: 1
-  attackPoint: {fileID: 0}
+  maxChaseDistance: 10
+  attackPoint: {fileID: 9041558607264564020}
   attackRange: 0.5
   damage: 20
   attackCooldown: 1.5
@@ -217,6 +216,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   maxHealth: 100
+  detectPoint: {fileID: 177819991773477439}
+  detectRange: 1
 --- !u!1 &5252539903124645808
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,7 +227,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 177819991773477439}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: DetectPoint
   m_TagString: Untagged
   m_Icon: {fileID: 1206586993520771344, guid: 0000000000000000d000000000000000, type: 0}
@@ -257,7 +258,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9041558607264564020}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: AttackPoint
   m_TagString: Untagged
   m_Icon: {fileID: 6519382022992737161, guid: 0000000000000000d000000000000000, type: 0}

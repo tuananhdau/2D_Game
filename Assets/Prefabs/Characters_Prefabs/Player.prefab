@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 5323923991427587714}
   - component: {fileID: 5243409041941573367}
   - component: {fileID: 5311160915272153795}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -83,8 +83,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1756487025
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 3204480812468917802, guid: f77aed21e67e3fa42b3819e846224d27, type: 3}
@@ -182,8 +182,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f48a565af3b6a9840a20b8452ab9e8c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  speed: 7
-  jumpHeight: 7
+  speed: 8.5
+  jumpHeight: 18
   jumpCount: 2
   groundCheckPoint: {fileID: 6390808079796917000}
   groundCheckRadius: 0.2
@@ -237,7 +237,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6390808079796917000}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: GroundCheckPoint
   m_TagString: Untagged
   m_Icon: {fileID: 1206586993520771344, guid: 0000000000000000d000000000000000, type: 0}
