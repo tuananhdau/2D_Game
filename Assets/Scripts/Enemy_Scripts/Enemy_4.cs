@@ -4,15 +4,15 @@ public class Enemy_4 : MonoBehaviour
 {
     [Header("1. Cài đặt Di chuyển & Đi tuần")]
     public float speed = 2f;
-    public float patrolDistance = 3f; // Quãng đường đi tuần quanh điểm gốc
+    public float patrolDistance = 3f;
 
     [Header("2. Cài đặt Phát hiện & Đuổi bắt")]
-    public float visionRange = 5f;       // Tầm nhìn (Vòng tròn xanh lá)
-    public float maxChaseDistance = 10f; // Nếu đi quá xa nhà 10m thì tự bỏ về (dù vẫn thấy Player)
+    public float visionRange = 5f;
+    public float maxChaseDistance = 10f;
     
     [Header("3. Cài đặt Tấn công")]
     public Transform attackPoint;
-    public float attackRange = 1.5f;     // Tầm đánh (Vòng tròn vàng)
+    public float attackRange = 2.5f;     // Tăng tầm đánh lên 2.5 (vòng tròn vàng)
     public int damage = 20;
     public float attackCooldown = 1.5f;
     public LayerMask playerLayer;
@@ -33,30 +33,40 @@ public class Enemy_4 : MonoBehaviour
     {
         anim = GetComponent<Animator>();
         currentHealth = maxHealth;
-        startPosition = transform.position; // Lưu vị trí "nhà"
+        startPosition = transform.position;
     }
 
     void Update()
     {
         if (currentHealth <= 0) return;
 
-        // 1. Kiểm tra xem có thấy Player không (Trong vùng VisionRange)
+        // Kiểm tra thấy Player
         Collider2D detectedPlayer = Physics2D.OverlapCircle(transform.position, visionRange, playerLayer);
 
-        // 2. Tính khoảng cách từ Enemy về "Nhà" (Start Position)
+        // Tính khoảng cách từ Enemy về nhà
         float distanceFromHome = Vector2.Distance(transform.position, startPosition);
 
-        // --- QUYẾT ĐỊNH HÀNH ĐỘNG ---
-        // Đuổi theo KHI: (Thấy Player) VÀ (Chưa bị dụ đi quá xa nhà)
+        // Đuổi theo khi: (Thấy Player) VÀ (Chưa đi quá xa nhà)
         if (detectedPlayer != null && distanceFromHome < maxChaseDistance)
         {
-            // -> ĐANG Ở TRẠNG THÁI CHIẾN ĐẤU (Attack / Chase)
             float distanceToPlayer = Vector2.Distance(transform.position, detectedPlayer.transform.position);
 
             if (distanceToPlayer <= attackRange)
             {
-                // A. Đủ gần thì ĐÁNH
-                if (anim != null) anim.SetBool("IsRun", false); // Dừng chạy
+                // Đủ gần thì ĐÁNH
+                if (anim != null) anim.SetBool("IsRun", false);
+                
+                // Đảm bảo quay mặt về phía Player trước khi tấn công
+                if (detectedPlayer.transform.position.x > transform.position.x && !movingRight)
+                {
+                    Flip();
+                }
+                else if (detectedPlayer.transform.position.x < transform.position.x && movingRight)
+                {
+                    Flip();
+                }
+                
+                Debug.Log($"Player trong tầm đánh! Khoảng cách: {distanceToPlayer}");
                 
                 if (Time.time >= lastAttackTime + attackCooldown)
                 {
@@ -65,8 +75,7 @@ public class Enemy_4 : MonoBehaviour
             }
             else
             {
-                // B. Chưa đủ gần thì ĐUỔI
-                // (Nếu đang có lệnh đánh dở thì hủy đi để chạy cho nhanh)
+                // Chưa đủ gần thì ĐUỔI
                 if (anim != null) anim.ResetTrigger("Attack"); 
                 
                 Chase(detectedPlayer.transform);
@@ -74,36 +83,27 @@ public class Enemy_4 : MonoBehaviour
         }
         else
         {
-            // -> KHÔNG THẤY PLAYER (Hoặc Player đã chạy quá xa) -> VỀ ĐI TUẦN
+            // Không thấy Player -> VỀ ĐI TUẦN
             BackToPatrol();
         }
     }
 
-    // --- HÀM QUAY VỀ ĐI TUẦN ---
     void BackToPatrol()
     {
-        // Hủy ngay lệnh tấn công nếu đang chờ kích hoạt (Quan trọng)
         if (anim != null) anim.ResetTrigger("Attack");
-
-        // Gọi hàm đi tuần
         Patrol();
     }
 
     void Patrol()
     {
-        // Kích hoạt lại animation đi bộ
         if (anim != null) anim.SetBool("IsRun", true);
 
-        // Di chuyển thẳng
         transform.Translate(Vector2.right * speed * Time.deltaTime);
 
-        // Logic quay đầu khi đi hết quãng đường tuần tra
         float distanceFromStart = Vector2.Distance(transform.position, startPosition);
         
-        // Nếu đang ở xa điểm xuất phát (do vừa đuổi theo Player về)
         if (distanceFromStart >= patrolDistance)
         {
-            // Kiểm tra xem có đang đi hướng ra xa không? Nếu có thì quay đầu lại
             bool isMovingAway = (transform.position.x > startPosition.x && movingRight) || 
                                 (transform.position.x < startPosition.x && !movingRight);
             if (isMovingAway) Flip();
@@ -121,7 +121,6 @@ public class Enemy_4 : MonoBehaviour
     {
         if (anim != null) anim.SetBool("IsRun", true);
 
-        // Di chuyển tới vị trí Player
         transform.position = Vector2.MoveTowards(transform.position, 
             new Vector2(target.position.x, transform.position.y), speed * Time.deltaTime);
 
@@ -132,14 +131,35 @@ public class Enemy_4 : MonoBehaviour
 
     void Attack()
     {
+        // Sau khi đã quay mặt đúng hướng, thực hiện tấn công
         if (anim != null) anim.SetTrigger("Attack");
         
+        Debug.Log("=== BẮT ĐẦU ATTACK ===");
+        
+        // Tìm tất cả Player trong tầm đánh
         Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, playerLayer);
-        foreach(Collider2D player in hitPlayers)
+        
+        Debug.Log($"Số Player tìm thấy: {hitPlayers.Length}");
+        
+        foreach(Collider2D playerCollider in hitPlayers)
         {
-            // Code trừ máu Player (nếu có)
-             Debug.Log("Chém trúng!");
+            Debug.Log($"Tìm thấy: {playerCollider.gameObject.name}, Layer: {LayerMask.LayerToName(playerCollider.gameObject.layer)}");
+            
+            // Lấy component Player từ đối tượng bị đánh trúng
+            Player playerScript = playerCollider.GetComponent<Player>();
+            
+            if(playerScript != null)
+            {
+                // Gây sát thương cho Player
+                playerScript.TakeDamage(damage);
+                Debug.Log($"Enemy tấn công Player gây {damage} sát thương!");
+            }
+            else
+            {
+                Debug.LogWarning("Không tìm thấy Player Script trên GameObject!");
+            }
         }
+        
         lastAttackTime = Time.time;
     }
 
@@ -147,6 +167,9 @@ public class Enemy_4 : MonoBehaviour
     {
         currentHealth -= damage;
         if(anim != null) anim.SetTrigger("Hurt");
+        
+        Debug.Log($"Enemy bị mất {damage} máu! Máu còn lại: {currentHealth}");
+        
         if (currentHealth <= 0) Die();
     }
 
@@ -166,17 +189,17 @@ public class Enemy_4 : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        // 1. Tầm nhìn (Xanh lá) - Player ra khỏi vòng này là quái bỏ đi
+        // Tầm nhìn (Xanh lá)
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, visionRange);
 
-        // 2. Tầm đánh (Vàng)
+        // Tầm đánh (Vàng)
         if (attackPoint != null) {
             Gizmos.color = Color.yellow; 
             Gizmos.DrawWireSphere(attackPoint.position, attackRange);
         }
         
-        // 3. Giới hạn đuổi (Đỏ mờ)
+        // Giới hạn đuổi (Đỏ mờ)
         Gizmos.color = new Color(1, 0, 0, 0.2f);
         Vector3 home = Application.isPlaying ? startPosition : transform.position;
         Gizmos.DrawWireSphere(home, maxChaseDistance);
