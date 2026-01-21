@@ -8,25 +8,26 @@ public class Enemy : MonoBehaviour
     public float patrol_Speed = 2.2f;
     public float chaseSpeed = 4f;
 
-    [Header("Detection & Ranges")]
-    public Transform detectPoint;
-    public float distance = .3f; // Khoảng cách check đất để quay đầu
+    [Header("Detection (Mắt của Enemy)")]
+    public Transform detectPoint;   // Điểm check vực thẳm
+    public float distance = .3f;    // Khoảng cách check vực
     public LayerMask whatIsGround;
-    
-    [Tooltip("Khoảng cách để Enemy dừng lại và đánh. Nếu Enemy cứ chạy mãi, hãy TĂNG số này lên (ví dụ: 2.0)")]
-    public float retrieveDistance = 1.5f; 
 
-    // Biến này thực chất là "Vùng phát hiện người chơi" (Aggro Range)
-    // Được set bởi OverlapBox (hình chữ nhật màu vàng)
-    private bool isPlayerInAttackRange; 
-    public Vector2 size; // Kích thước vùng phát hiện
-    public Vector3 offset;
-    
-    [Header("Combat")]
-    public Transform attackPoint;
-    public float attackRadius = 1f;
-    public LayerMask whatIsPlayer;
+    // Vùng phát hiện người chơi (Hình chữ nhật)
+    public Vector2 size;            // Cài đặt trong Inspector (VD: X=6, Y=3)
+    public Vector3 offset;          // Cài đặt trong Inspector (VD: Y=1)
+    private bool isPlayerDetected;  // Biến kiểm tra xem có thấy Player không
 
+    [Header("Combat (Tấn công)")]
+    // Khoảng cách dừng lại để đánh. Phải LỚN HƠN khoảng cách va chạm vật lý.
+    // Ví dụ: Nếu Collider to 1 đơn vị, thì RetrieveDistance nên là 2 hoặc 2.5
+    public float retrieveDistance = 2.5f; 
+    
+    public Transform attackPoint;   // Điểm gây sát thương (Mũi kiếm)
+    public float attackRadius = 1f; // Bán kính vòng tròn sát thương
+    public LayerMask whatIsPlayer;  // Layer của Player
+
+    // Các biến nội bộ
     private Transform player;
     private Animator animator;
     private Rigidbody2D rb;
@@ -36,141 +37,93 @@ public class Enemy : MonoBehaviour
 
     void Start()
     {
+        // Khởi tạo các giá trị ban đầu
         facingLeft = true;
         isEnemyDied = false;
-        isPlayerInAttackRange = false;
-        rb = this.gameObject.GetComponent<Rigidbody2D>();
-        animator = this.gameObject.GetComponent<Animator>();
-        boxCollider2D = this.gameObject.GetComponent<BoxCollider2D>();
+        isPlayerDetected = false;
         
-        // Tìm player ngay lúc đầu (để tránh lỗi null nếu có)
+        rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        boxCollider2D = GetComponent<BoxCollider2D>();
+        
+        // Tìm Player trong Scene để tránh lỗi null
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         if (p != null) player = p.transform;
     }
 
     void Update()
     {
-        // 1. Kiểm tra chết
+        // 1. Kiểm tra nếu đã chết thì không làm gì cả
         if (maxHealth <= 0)
         {
             if (!isEnemyDied)
             {
-                rb.gravityScale = 0f;
-                rb.linearVelocity = Vector2.zero; // Dừng hẳn physics lại
-                isEnemyDied = true;
                 Die();
             }
             return;
         }
 
-        // 2. Nếu không tìm thấy Player trong Scene -> Đi tuần tra
+        // 2. Cập nhật vị trí Player (phòng trường hợp Player chết/respawn)
         if (player == null)
         {
-             // Thử tìm lại player nếu bị mất
             GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) 
-            {
-                player = p.transform;
-            }
-            else
-            {
-                PatrolEnemy();
-                animator.SetBool("Attack", false);
-                CheckCollision(); // Vẫn check để vẽ gizmos
-                Flip();
-                return;
-            }
+            if (p != null) player = p.transform;
         }
 
-        // 3. Các logic chính
-        Flip();
-        CheckCollision(); // Cập nhật biến isPlayerInAttackRange (Vùng phát hiện)
+        // 3. Kiểm tra xem có thấy Player không
+        CheckPlayerDetection();
 
-        // Nếu Player nằm trong vùng hình hộp chữ nhật (OverlapBox)
-        if (isPlayerInAttackRange)
+        // 4. Máy trạng thái (AI Logic)
+        if (isPlayerDetected && player != null)
         {
-            // --- XỬ LÝ QUAY MẶT ---
-            if (player.position.x > transform.position.x && facingLeft)
-            {
-                transform.eulerAngles = new Vector3(0f, -180f, 0f);
-                facingLeft = false;
-            }
-            else if (player.position.x < transform.position.x && !facingLeft)
-            {
-                transform.eulerAngles = new Vector3(0f, 0f, 0f);
-                facingLeft = true;
-            }
-
-            // --- XỬ LÝ KHOẢNG CÁCH (CHASE vs ATTACK) ---
+            // --- TRẠNG THÁI: PHÁT HIỆN PLAYER ---
             
-            // Tính khoảng cách thực tế giữa Enemy và Player
+            // A. Quay mặt về phía Player
+            FacePlayer();
+
+            // B. Tính khoảng cách thực tế
             float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
-            // Nếu khoảng cách LỚN hơn tầm đánh -> CHẠY TỚI
             if (distanceToPlayer > retrieveDistance)
             {
+                // C. Nếu xa -> Đuổi theo (Chase)
                 animator.SetBool("Attack", false);
                 Vector2 targetPos = new Vector2(player.position.x, transform.position.y);
                 transform.position = Vector2.MoveTowards(transform.position, targetPos, chaseSpeed * Time.deltaTime);
             }
-            // Nếu khoảng cách NHỎ hơn hoặc bằng tầm đánh -> TẤN CÔNG
             else
             {
-                // Dừng di chuyển để đánh (tránh vừa trượt vừa đánh)
-                // Không dùng MoveTowards ở đây
-                
+                // D. Nếu gần -> Đứng lại và Tấn công (Attack)
+                // Quan trọng: Set Attack = true để Animator chuyển state
                 if (!animator.GetBool("Attack"))
                 {
-                    Debug.Log("Enemy in range -> ATTACK!"); // Kiểm tra Console xem dòng này có hiện không
                     animator.SetBool("Attack", true);
                 }
             }
         }
         else
         {
-            // Player không nằm trong vùng phát hiện -> Đi tuần
-            PatrolEnemy();
+            // --- TRẠNG THÁI: KHÔNG THẤY PLAYER -> ĐI TUẦN ---
             animator.SetBool("Attack", false);
+            PatrolEnemy();
+            PatrolFlip(); // Chỉ tự động quay đầu khi đi tuần gặp vực
         }
     }
+
+    // --- CÁC HÀM CHỨC NĂNG ---
 
     void PatrolEnemy()
     {
+        // Di chuyển sang trái (do logic Flip sẽ xoay trục tọa độ nên luôn dùng Vector2.left)
         transform.Translate(Vector2.left * Time.deltaTime * patrol_Speed);
     }
 
-    // Hàm này check vùng phát hiện (Aggro Range)
-    void CheckCollision()
+    // Hàm quay đầu khi đi tuần (gặp vực hoặc tường)
+    void PatrolFlip()
     {
-        Collider2D collInfo = Physics2D.OverlapBox(transform.position + offset, size, 0f, whatIsPlayer);
-        isPlayerInAttackRange = (collInfo != null);
-    }
-
-    // Hàm này được gọi bởi Animation Event (khi chém xuống)
-    public void Attack()
-    {
-        Collider2D collInfo = Physics2D.OverlapCircle(attackPoint.position, attackRadius, whatIsPlayer);
-
-        if (collInfo)
-        {
-            // Kiểm tra null kỹ hơn để tránh lỗi
-            var playerScript = collInfo.gameObject.GetComponent<Player>(); // Đảm bảo script Player của bạn tên là "Player"
-            if (playerScript != null)
-            {
-                 // playerScript.TakeDamage(1); 
-                 Debug.Log("Hit Player!");
-            }
-        }
-    }
-
-    void Flip()
-    {
-        // Chỉ Flip khi đi tuần (Patrol) hoặc khi không trong trạng thái Chase
-        // (Logic Chase đã có phần Flip riêng ở trên để bám theo Player chính xác hơn)
-        if(isPlayerInAttackRange) return; 
-
         RaycastHit2D hitInfo = Physics2D.Raycast(detectPoint.position, Vector2.down, distance, whatIsGround);
 
+        // Nếu không thấy đất -> Quay đầu
         if (hitInfo == false)
         {
             if (facingLeft)
@@ -186,42 +139,98 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    // Hàm quay mặt về phía Player khi đang đuổi theo
+    void FacePlayer()
+    {
+        if (player.position.x > transform.position.x && facingLeft)
+        {
+            transform.eulerAngles = new Vector3(0f, -180f, 0f); // Quay phải
+            facingLeft = false;
+        }
+        else if (player.position.x < transform.position.x && !facingLeft)
+        {
+            transform.eulerAngles = new Vector3(0f, 0f, 0f); // Quay trái
+            facingLeft = true;
+        }
+    }
+
+    // Hàm kiểm tra vùng nhìn (OverlapBox)
+    void CheckPlayerDetection()
+    {
+        // Tạo một hộp ảo để quét xem có Player đứng trong đó không
+        Collider2D collInfo = Physics2D.OverlapBox(transform.position + offset, size, 0f, whatIsPlayer);
+        isPlayerDetected = (collInfo != null);
+    }
+
+    // --- SỰ KIỆN TẤN CÔNG (Gắn vào Animation Event) ---
+    public void Attack()
+    {
+        // Tạo vòng tròn tại mũi kiếm để check trúng đòn
+        Collider2D collInfo = Physics2D.OverlapCircle(attackPoint.position, attackRadius, whatIsPlayer);
+
+        if (collInfo != null)
+        {
+            Player playerScript = collInfo.gameObject.GetComponent<Player>();
+            if (playerScript != null)
+            {
+                // Trừ máu Player
+                playerScript.TakeDamage(1);
+            }
+        }
+    }
+
+    // Hàm nhận sát thương của chính Enemy
     public void TakeDamage(int damageAmount)
     {
         if (maxHealth <= 0) return;
-        
+
         maxHealth -= damageAmount;
         animator.SetTrigger("Hurt");
+        
+        if (maxHealth <= 0)
+        {
+            Die();
+        }
     }
 
+    void Die()
+    {
+        if (isEnemyDied) return;
+
+        isEnemyDied = true;
+        Debug.Log("Enemy Died!");
+        
+        rb.gravityScale = 0f;
+        rb.linearVelocity = Vector2.zero;
+        boxCollider2D.enabled = false; // Tắt va chạm để xác rơi xuống hoặc Player đi qua
+        
+        animator.SetBool("Death", true);
+        Destroy(this.gameObject, deathTime);
+    }
+
+    // Vẽ hình hỗ trợ debug (Gizmos)
     private void OnDrawGizmosSelected()
     {
+        // 1. Vẽ tia dò đất (Màu vàng)
         if (detectPoint != null)
         {
             Gizmos.color = Color.yellow;
             Gizmos.DrawRay(detectPoint.position, Vector2.down * distance);
         }
 
+        // 2. Vẽ tầm đánh (Màu đỏ)
         if (attackPoint != null)
         {
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
         }
 
-        // Vẽ vùng phát hiện
+        // 3. Vẽ vùng phát hiện Player (Màu xanh lá)
         Gizmos.color = Color.green;
         Gizmos.DrawWireCube(transform.position + offset, size);
-        
-        // Vẽ vùng giới hạn đánh (retrieveDistance) để bạn dễ chỉnh
+
+        // 4. Vẽ giới hạn khoảng cách dừng lại (Màu xanh dương)
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, retrieveDistance);
-    }
-
-    void Die()
-    {
-        Debug.Log("Enemy Died!");
-        animator.SetBool("Death", true);
-        boxCollider2D.enabled = false;
-        Destroy(this.gameObject, deathTime);
     }
 }
