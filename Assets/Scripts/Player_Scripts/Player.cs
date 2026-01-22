@@ -107,38 +107,52 @@ public class Player : MonoBehaviour {
             animator.SetTrigger("Attack_3");
         }
     }
-    
+
     // ====== HÀM NÀY ĐƯỢC GỌI TỪ ANIMATION EVENT ======
-    public void Attack() {
-        if(attackPoint == null) {
+    // ====== HÀM NÀY ĐƯỢC GỌI TỪ ANIMATION EVENT ======
+    public void Attack()
+    {
+        if (attackPoint == null)
+        {
             Debug.LogWarning("⚠️ Chưa gán Attack Point cho Player!");
             return;
         }
-        
+
         Debug.Log("🗡️ Player tấn công!");
-        
+
         // Tìm tất cả Enemy trong tầm đánh
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayer);
-        
+
         Debug.Log($"Tìm thấy {hitEnemies.Length} enemy trong tầm đánh");
-        
+
         // Gây sát thương cho từng Enemy
-        foreach(Collider2D enemy in hitEnemies) {
+        foreach (Collider2D enemy in hitEnemies)
+        {
             Debug.Log($"Đánh trúng: {enemy.name}");
-            
-            // Thử tìm script Enemy_4
-            Enemy_4 enemy4Script = enemy.GetComponent<Enemy_4>();
-            if(enemy4Script != null) {
-                enemy4Script.TakeDamage(attackDamage);
-                Debug.Log($"✅ Player gây {attackDamage} sát thương cho {enemy.name}!");
+
+            // ✅ Kiểm tra Enemy (loại 1)
+            Enemy enemyScript = enemy.GetComponent<Enemy>();
+            if (enemyScript != null)
+            {
+                enemyScript.TakeDamage(1); // Enemy nhận 1 damage (theo maxHealth của nó là 3)
+                Debug.Log($"✅ Player gây 1 sát thương cho Enemy: {enemy.name}!");
+                continue; // Đã xử lý xong, qua enemy tiếp theo
             }
-            
-            // Nếu có Enemy khác (Enemy_1, Enemy_2...) thì thêm vào đây
-            // Enemy_1 enemy1Script = enemy.GetComponent<Enemy_1>();
-            // if(enemy1Script != null) enemy1Script.TakeDamage(attackDamage);
+
+            // ✅ Kiểm tra Enemy_4 (loại 2)
+            Enemy_4 enemy4Script = enemy.GetComponent<Enemy_4>();
+            if (enemy4Script != null)
+            {
+                enemy4Script.TakeDamage(attackDamage); // Enemy_4 nhận 25 damage
+                Debug.Log($"✅ Player gây {attackDamage} sát thương cho Enemy_4: {enemy.name}!");
+                continue;
+            }
+
+            // Nếu không phải Enemy nào cả
+            Debug.LogWarning($"⚠️ {enemy.name} không có script Enemy hoặc Enemy_4!");
         }
     }
-    
+
     // ====== HỆ THỐNG NHẬN SÁT THƯƠNG ======
     public void TakeDamage(float damage) {
         if(Time.time < lastDamageTime + invincibilityTime) {
