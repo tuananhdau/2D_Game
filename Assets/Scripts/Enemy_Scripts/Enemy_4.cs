@@ -50,6 +50,14 @@ public class Enemy_4 : MonoBehaviour
     public float invincibleTime = 0.15f;
 
     /* =========================
+     * 7. TỰ ĐỘNG HỒI MÁU (NEW)
+     * ========================= */
+    [Header("7. Tự động hồi máu")]
+    public float regenDelay = 5f;       // Thời gian chờ trước khi bắt đầu hồi (5 giây)
+    public int regenAmount = 5;         // Lượng máu hồi mỗi lần
+    public float regenRate = 1f;        // Tốc độ hồi (1 giây hồi 1 lần)
+
+    /* =========================
      * Biến nội bộ
      * ========================= */
     private int currentHealth;
@@ -60,7 +68,8 @@ public class Enemy_4 : MonoBehaviour
     private Animator anim;
 
     private bool isInvincible = false;
-    private float lastHitTime;
+    private float lastHitTime;          // Thời điểm bị đánh lần cuối
+    private float nextRegenTime;        // Biến đếm cho tốc độ hồi máu
 
     /* =========================
      * START
@@ -73,6 +82,9 @@ public class Enemy_4 : MonoBehaviour
         startPosition = transform.position;
         minX = startPosition.x - patrolDistance;
         maxX = startPosition.x + patrolDistance;
+
+        // Khởi tạo thời gian bị đánh để không hồi máu ngay lập tức khi game bắt đầu
+        lastHitTime = Time.time; 
 
         if (healthBarRoot != null)
             healthBarRoot.SetActive(false);
@@ -87,13 +99,31 @@ public class Enemy_4 : MonoBehaviour
     {
         if (currentHealth <= 0) return;
 
-        // Ẩn thanh máu sau 1 thời gian không bị đánh
-        if (healthBarRoot != null && healthBarRoot.activeSelf)
+        // --- LOGIC HỒI MÁU TỰ ĐỘNG (NEW) ---
+        // 1. Kiểm tra nếu chưa đầy máu
+        // 2. Kiểm tra nếu đã qua 5 giây kể từ lần bị đánh cuối cùng
+        if (currentHealth < maxHealth && Time.time > lastHitTime + regenDelay)
         {
-            if (Time.time > lastHitTime + healthBarHideDelay)
-                healthBarRoot.SetActive(false);
+            // Kiểm tra nhịp hồi máu (ví dụ mỗi 1 giây hồi 1 lần)
+            if (Time.time > nextRegenTime)
+            {
+                RegenerateHealth();
+                nextRegenTime = Time.time + regenRate;
+            }
         }
 
+        // --- LOGIC ẨN THANH MÁU ---
+        // (Chỉ ẩn khi đầy máu hoặc lâu không bị đánh VÀ không đang hồi phục)
+        if (healthBarRoot != null && healthBarRoot.activeSelf)
+        {
+            // Nếu đã đầy máu và quá thời gian chờ -> Ẩn
+            if (currentHealth >= maxHealth && Time.time > lastHitTime + healthBarHideDelay)
+            {
+                healthBarRoot.SetActive(false);
+            }
+        }
+
+        // --- LOGIC AI (DI CHUYỂN & TẤN CÔNG) ---
         Collider2D detectedPlayer =
             Physics2D.OverlapCircle(transform.position, visionRange, playerLayer);
 
@@ -125,8 +155,24 @@ public class Enemy_4 : MonoBehaviour
         }
     }
 
+    // --- HÀM HỒI MÁU RIÊNG ---
+    void RegenerateHealth()
+    {
+        currentHealth += regenAmount;
+
+        // Không cho vượt quá máu tối đa
+        if (currentHealth > maxHealth) currentHealth = maxHealth;
+
+        // Hiện thanh máu để người chơi thấy quái đang hồi phục (Tùy chọn)
+        if (healthBarRoot != null) healthBarRoot.SetActive(true);
+        
+        UpdateHealthBar();
+        
+        // (Tùy chọn) Có thể thêm hiệu ứng particle màu xanh lá ở đây
+    }
+
     /* =========================
-     * TUẦN TRA
+     * CÁC HÀM DI CHUYỂN (GIỮ NGUYÊN)
      * ========================= */
     void Patrol()
     {
@@ -157,9 +203,6 @@ public class Enemy_4 : MonoBehaviour
         else if (transform.position.x < startPosition.x && !movingRight) Flip();
     }
 
-    /* =========================
-     * ĐUỔI THEO PLAYER
-     * ========================= */
     void Chase(Transform target)
     {
         if (anim != null) anim.SetBool("IsRun", true);
@@ -171,9 +214,6 @@ public class Enemy_4 : MonoBehaviour
         else if (target.position.x < transform.position.x && movingRight) Flip();
     }
 
-    /* =========================
-     * TẤN CÔNG
-     * ========================= */
     void PerformAttack(Collider2D player)
     {
         if (anim != null) anim.SetBool("IsRun", false);
@@ -203,7 +243,7 @@ public class Enemy_4 : MonoBehaviour
     }
 
     /* =========================
-     * NHẬN DAMAGE
+     * NHẬN DAMAGE (CẬP NHẬT LastHitTime)
      * ========================= */
     public void TakeDamage(int dmg)
     {
@@ -212,6 +252,7 @@ public class Enemy_4 : MonoBehaviour
         currentHealth -= dmg;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
+        // QUAN TRỌNG: Reset thời gian bị đánh để ngắt quá trình hồi máu
         lastHitTime = Time.time;
 
         if (healthBarRoot != null)
@@ -227,9 +268,6 @@ public class Enemy_4 : MonoBehaviour
             Die();
     }
 
-    /* =========================
-     * BẤT TỬ TẠM THỜI
-     * ========================= */
     System.Collections.IEnumerator InvincibleCoroutine()
     {
         isInvincible = true;
@@ -237,9 +275,6 @@ public class Enemy_4 : MonoBehaviour
         isInvincible = false;
     }
 
-    /* =========================
-     * CHẾT
-     * ========================= */
     void Die()
     {
         if (anim != null) anim.SetTrigger("Dead");
@@ -251,9 +286,6 @@ public class Enemy_4 : MonoBehaviour
         Destroy(gameObject, 2f);
     }
 
-    /* =========================
-     * UI & HỖ TRỢ
-     * ========================= */
     void UpdateHealthBar()
     {
         if (healthFill != null)
